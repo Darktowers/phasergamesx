@@ -12,7 +12,7 @@ function pathToArray(parts) {
 }
 
 module.exports = function(grunt) {
-  grunt.registerMultiTask('examples', 'Build examples site.', function() {
+  grunt.registerMultiTask('tomate_volador', 'Build examples site.', function() {
     var options = this.options({
       base: '',
       excludes: []
