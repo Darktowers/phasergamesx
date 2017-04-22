@@ -1,4 +1,4 @@
-var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update, render: render });
+var game = new Phaser.Game(320, 480, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update, render: render });
 
 function preload() {
 
@@ -20,11 +20,10 @@ function create() {
         
     //  Enable p2 physics
     game.physics.startSystem(Phaser.Physics.P2JS);
-    game.physics.p2.gravity.y = 1000;
-    
+    game.physics.p2.gravity.y = 400;
+    game.world.setBounds(0, 0, 320, 740);
     tetris1 = game.add.sprite(300, 100, 'tetrisblock1');
-    tetris2 = game.add.sprite(375, 200, 'tetrisblock2');
-    tetris3 = game.add.sprite(450, 300, 'tetrisblock3');
+
     
     //  Create collision group for the blocks
     var blockCollisionGroup = game.physics.p2.createCollisionGroup();
@@ -34,22 +33,9 @@ function create() {
     game.physics.p2.updateBoundsCollisionGroup();
     
     //  Enable the physics bodies on all the sprites
-    game.physics.p2.enable([ tetris1, tetris2, tetris3 ], false);
     
-    tetris1.body.clearShapes();
-    tetris1.body.loadPolygon('physicsData', 'tetrisblock1');
-    tetris1.body.setCollisionGroup(blockCollisionGroup);
-    tetris1.body.collides([blockCollisionGroup]);
     
-    tetris2.body.clearShapes();
-    tetris2.body.loadPolygon('physicsData', 'tetrisblock2');
-    tetris2.body.setCollisionGroup(blockCollisionGroup);
-    tetris2.body.collides([blockCollisionGroup]);
-    
-    tetris3.body.clearShapes();
-    tetris3.body.loadPolygon('physicsData', 'tetrisblock3');
-    tetris3.body.setCollisionGroup(blockCollisionGroup);
-    tetris3.body.collides([blockCollisionGroup]);   
+  
     
     // create physics body for mouse which we will use for dragging clicked bodies
     mouseBody = new p2.Body();
@@ -59,11 +45,17 @@ function create() {
     game.input.onDown.add(click, this);
     game.input.onUp.add(release, this);
     game.input.addMoveCallback(move, this);
+    game.camera.follow(tetris1);
+    game.physics.p2.enable([tetris1], false);
+    tetris1.body.clearShapes();
+    tetris1.body.loadPolygon('physicsData', 'tetrisblock1');
+    tetris1.body.setCollisionGroup(blockCollisionGroup);
+    tetris1.body.collides([blockCollisionGroup]);
 }
 
 function click(pointer) {
 
-    var bodies = game.physics.p2.hitTest(pointer.position, [ tetris1.body, tetris2.body, tetris3.body ]);
+    var bodies = game.physics.p2.hitTest(pointer.position, [ tetris1.body ]);
     
     // p2 uses different coordinate system, so convert the pointer position to p2's coordinate system
     var physicsPos = [game.physics.p2.pxmi(pointer.position.x), game.physics.p2.pxmi(pointer.position.y)];
@@ -98,10 +90,12 @@ function move(pointer) {
 }
 
 function update() {
+
+    
 }
 
 function render() {
 
-//  game.debug.text(result, 32, 32);
+    game.debug.inputInfo(32, 32);
 
 }
