@@ -8,6 +8,8 @@ function preload() {
     game.load.image('nube3', 'assets/nube3.png');
     game.load.image('nube4', 'assets/nube4.png');
     game.load.image('background', 'assets/fondo.jpg');
+    game.load.image('gameover', 'assets/gameOver.jpg');
+    game.load.image('wingame', 'assets/winGame.jpg');
     game.load.physics('physicsData', 'assets/fisicas.json');
     
 
@@ -20,7 +22,7 @@ var nubes;
 var papas;
 function create() {
     var nubear = ['nube','nube2','nube3','nube4'];
-     game.add.tileSprite(0, 0, 320, 1278, 'background');   
+    game.add.tileSprite(0, 0, 320, 1278, 'background');   
     game.world.setBounds(0, 0, 320, 1278);
     //  Enable p2 physics
     game.physics.startSystem(Phaser.Physics.P2JS);
@@ -30,43 +32,16 @@ function create() {
     papas = game.add.sprite(100, 1200, 'papas');
     
     //  Create collision group for the blocks
-    var blockCollisionGroup = game.physics.p2.createCollisionGroup();
+    var tomatecollision = game.physics.p2.createCollisionGroup();
+    var papascollision = game.physics.p2.createCollisionGroup();
+    var nubescollision = game.physics.p2.createCollisionGroup();
     
     //  This part is vital if you want the objects with their own collision groups to still collide with the world bounds
     //  (which we do) - what this does is adjust the bounds to use its own collision group.
     game.physics.p2.updateBoundsCollisionGroup();
     
     //  Enable the physics bodies on all the sprites
-    
-    
-  
-    
-    // create physics body for mouse which we will use for dragging clicked bodies
-    mouseBody = new p2.Body();
-    game.physics.p2.world.addBody(mouseBody);
-        
-    // attach pointer events
-    game.input.onDown.add(click, this);
-    game.input.onUp.add(release, this);
-
-    game.input.addMoveCallback(move, this);
-    game.camera.follow(tomate);
-    game.physics.p2.enable(tomate, false);
-    
-    tomate.body.clearShapes();
-    tomate.body.loadPolygon('physicsData', 'tomate');
-    tomate.body.setCollisionGroup(blockCollisionGroup);
-    tomate.body.collides([blockCollisionGroup]);
-
-    
-    game.physics.p2.enable(papas, false);
-    papas.body.clearShapes();
-    papas.body.loadPolygon('physicsData', 'papas');
-    papas.body.setCollisionGroup(blockCollisionGroup);
-    papas.body.collides([blockCollisionGroup]);
-    papas.body.static = true;
-    
-    //Nubes
+       //Nubes
     var nubes = game.add.group();
     nubes.enableBody = true;
     nubes.physicsBodyType = Phaser.Physics.P2JS;  
@@ -78,13 +53,46 @@ function create() {
         var nubesprite = Math.floor((Math.random() * 3) + 1);
         yposition = yposition+100;
         var nube = nubes.create(Math.floor((Math.random() * 320) + 1), yposition , nubear[nubesprite]);
-        nube.body.setCollisionGroup(blockCollisionGroup);
-        nube.body.collides([blockCollisionGroup]);
+        nube.body.setCollisionGroup(nubescollision);
+        nube.body.collides([nubescollision, tomatecollision ]);
         nube.body.static = true;
-    }
+    } 
+    //papas
+    game.physics.p2.enable(papas, false);
+    papas.body.clearShapes();
+    papas.body.loadPolygon('physicsData', 'papas');
+    papas.body.setCollisionGroup(papascollision);
+    papas.body.collides([papascollision, tomatecollision]);
+    papas.body.static = true;
+    papas.enableBody = true;
+
+    //tomates
+    game.camera.follow(tomate);
+    game.physics.p2.enable(tomate, false);
+    tomate.body.clearShapes();
+    tomate.body.loadPolygon('physicsData', 'tomate');
+    tomate.body.setCollisionGroup(tomatecollision);
+    tomate.body.collides([tomatecollision, nubescollision]);
+    tomate.body.collides(papascollision, tomatewin, this);
+    tomate.body.collides(papascollision, tomatewin, this);
+    
+    // create physics body for mouse which we will use for dragging clicked bodies
+    mouseBody = new p2.Body();
+    game.physics.p2.world.addBody(mouseBody);
+        
+    // attach pointer events
+    game.input.onDown.add(click, this);
+    game.input.onUp.add(release, this);
+
+    game.input.addMoveCallback(move, this);
+
+
 
 
     
+}
+function tomatewin(body1,body2){
+    console.log("You win");
 }
 function click(pointer) {
     var positionworld = {
@@ -135,11 +143,12 @@ function move(pointer) {
 
 function update() {
 
-    
+    if(tomate.y >= 1200){
+        console.log("You lose "+ tomate.y);
+        
+    }
 }
 
 function render() {
-
     game.debug.inputInfo(32, 32);
-
 }
